@@ -106,13 +106,16 @@
         },
         
         /**
-         * Method that converts rgb to hex, this was a copy paste from stackoverflow.
+         * Method that converts rgb to hex, this was a copy paste from:
+         * https://www.sitepoint.com/jquery-convert-rgb-hex-color/
          **/
         _rgbToHex: function (r, g, b) {
             if (r > 255 || g > 255 || b > 255) {
                 throw "Invalid color component";
             }
-            return ((r << 16) | (g << 8) | b).toString(16);
+            return ("0" + parseInt(r,10).toString(16)).slice(-2) +
+                    ("0" + parseInt(g,10).toString(16)).slice(-2) +
+                    ("0" + parseInt(b,10).toString(16)).slice(-2);
         }
     };
     
