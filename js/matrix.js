@@ -26,6 +26,7 @@
             this.width = this.cols * TILE_WIDTH;
             this.height = this.rows * TILE_HEIGHT;
             this.img = image;
+            console.log("the number of rows are: " + this.rows + " columns are: " + this.cols);
         },
         
         /**
