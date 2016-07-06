@@ -71,7 +71,11 @@
             this.input.addEventListener("change", function () {
                 this.loadImage(function (image) {
                     var imgMatrix = this.matrix.generateMatrix(image);
-                    this.loader.loadMosaic(imgMatrix, this.rowDraw.bind(this));
+                    imgMatrix.then(function (imgMatrix) {
+                        this.loader.loadMosaic(imgMatrix, this.rowDraw.bind(this));
+                    }.bind(this)).then(null, function (error) {
+                        console.error("Something went wrong: " + error);
+                    });
                 }.bind(this));
             }.bind(this));
         }

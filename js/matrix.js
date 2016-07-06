@@ -9,7 +9,6 @@
         this.height = 0;
         this.rows = 0;
         this.cols = 0;
-        this.img = null;
     }
     
     Matrix.prototype = {
@@ -25,28 +24,27 @@
             this.rows = Math.floor(height / TILE_HEIGHT);
             this.width = this.cols * TILE_WIDTH;
             this.height = this.rows * TILE_HEIGHT;
-            this.img = image;
             console.log("the number of rows are: " + this.rows + " columns are: " + this.cols);
         },
         
         /**
          * Returns a canvas context that contains the current image and dimensions.
          **/
-        getCanvasCtxFromImg: function () {
+        getCanvasCtxFromImg: function (img) {
             var canvas = document.createElement('canvas'),
                 context = canvas.getContext && canvas.getContext('2d');
             
             canvas.height = this.height;
             canvas.width = this.width;
 
-            context.drawImage(this.img, 0, 0);
+            context.drawImage(img, 0, 0);
             
             return context;
         },
         
         /**
          * for every tile (row and column) of the current image a correesponding average colour is calculated.
-         * that data as an array is then returned 
+         * a promise is returned that contains this information
          **/
         getAvgColourMatrix: function (context) {
             var result = [],
@@ -54,17 +52,36 @@
                 col;
 
             for (row = 0; row < this.rows; row += 1) {
-                for (col = 0; col < this.cols; col += 1) {
-                    if (col === 0) {
-                        result[row] = [];
-                    }
-                    result[row][col] = this.getAverageColourForTile(
-                        context.getImageData(col * TILE_WIDTH, row * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT)
-                    );
-                }
+                result.push(this.getAvgRowMatrix(row, context));
             }
             
-            return result;
+            return Promise.all(result);
+        },
+        
+        /**
+         * for the row specified it creates an array of avg colours for that row as a promise
+         **/
+        getAvgRowMatrix: function (row, context) {
+            var rowPromise = [],
+                col;
+            
+            for (col = 0; col < this.cols; col += 1) {
+                rowPromise.push(this.getAvgTilePromise(row, col, context));
+            }
+            
+            return Promise.all(rowPromise);
+        },
+                                
+        getAvgTilePromise: function (row, col, context) {
+            return new Promise(function (resolve, reject) {
+                try {
+                    resolve(this.getAverageColourForTile(
+                        context.getImageData(col * TILE_WIDTH, row * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT)
+                    ));
+                } catch (e) {
+                    reject(e.message);
+                }
+            }.bind(this));
         },
         
         /**
@@ -94,13 +111,13 @@
         },
         
         /**
-         * Returns a multi dimensional array that contains the avg colours for each tile of a passed image.
+         * Returns a promise that contains a multi dimensional array that contains the avg colours for each tile of a passed image.
          **/
         generateMatrix: function (image) {
             var context;
             this.calculateDimensions(image);
             
-            context = this.getCanvasCtxFromImg();
+            context = this.getCanvasCtxFromImg(image);
             
             return this.getAvgColourMatrix(context);
         },
