@@ -8,27 +8,20 @@
         this.onRowComplete = null;
         this.currentRow = 0;
         this.rowPromises = [];
+        this.matrix = null;
     }
     
     Loader.prototype = {        
         /**
-         * here all rows are loaded on error a message is generated
+         * here the first row of the mosaic is loaded
          * 
          **/
         loadRows: function (matrix) {
             var i;
-            this.rowPromises = [];
-            this.currentRow = 0;
+                this.rowPromises = [];
+                this.currentRow = 0;
             
-            for (i = 0; i < matrix.length; i += 1) {
-                this.rowPromises.push(this.loadRow(matrix[i]));
-            }
-            
-            this.rowPromises[this.currentRow].then(this.insertRow.bind(this));
-            
-//            Promise.all(rowPromises).then(null, function (result) {
-//                console.log("something went wrong: " + result);
-//            });
+            this.loadRow(matrix[this.currentRow]).then(this.insertRow.bind(this));
         },
         
         /**
@@ -48,13 +41,13 @@
         
         /**
          * Concatenates the result which should be an array of tiles and passes it to the onRowComplet mehtod. 
-         * calls the next promise then to draw the next row.
+         * creates the next promise then to draw the next row.
          **/
         insertRow: function (result) {
             this.onRowComplete(result.reduce(this._concat));
             this.currentRow += 1;
-            if (this.rowPromises[this.currentRow]) {
-                this.rowPromises[this.currentRow].then(this.insertRow.bind(this));
+            if (this.currentRow < this.matrix.length) {
+                this.loadRow(this.matrix[this.currentRow]).then(this.insertRow.bind(this));
             }  
         },
         
@@ -91,6 +84,8 @@
         loadMosaic: function (matrix, onRowComplete) {
 
             this.onRowComplete = onRowComplete;
+            
+            this.matrix = matrix;
             
             this.loadRows(matrix);
         }

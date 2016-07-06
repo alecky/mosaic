@@ -71,7 +71,10 @@
             
             return Promise.all(rowPromise);
         },
-                                
+    
+        /**
+         * creates a promise that generates the average colour for a tile.
+         **/
         getAvgTilePromise: function (row, col, context) {
             return new Promise(function (resolve, reject) {
                 try {
